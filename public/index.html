@@ -1,92 +1,608 @@
-<!doctype html><html lang="pt"><head><meta charset="utf-8">
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#141414"><link rel="manifest" href="manifest.json"><link rel="icon" href="icon.svg">
+<meta name="theme-color" content="#0a0a12">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg">
 <title>WUICHAT</title>
 <style>
-:root{--bg:#141414;--bg2:#1f1f1f;--y:#FFD60A;--r:#E0202A;--t:#f5f5f5;--m:#9a9a9a}
-*{box-sizing:border-box}html,body{height:100%;margin:0}
-body{background:var(--bg);color:var(--t);font:16px system-ui,sans-serif;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
-#app{height:100%;display:flex;flex-direction:column;max-width:560px;margin:auto}
-header{display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--r)}
-header h1{flex:1;margin:0;font-size:20px;font-weight:800}
-button{font:inherit;cursor:pointer;border:0;border-radius:20px;padding:9px 16px;background:var(--y);color:#141414;font-weight:700}
-button.g{background:transparent;color:var(--t);padding:6px 10px}
+:root{
+  --bg:#0a0a12;--bg2:#12121f;--bg3:#1a1a2e;
+  --y:#FFD60A;--y2:#FFB800;--r:#E0202A;--r2:#FF3B4E;
+  --t:#f0f0f5;--m:#8a8aa0;--ok:#3ddc84;
+  --glass:rgba(26,26,46,.55);--glass-b:rgba(255,214,10,.12);
+  --shadow:0 8px 32px rgba(0,0,0,.5);
+  --neon:0 0 20px rgba(255,214,10,.35);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;margin:0}
+body{
+  background:var(--bg);color:var(--t);
+  font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+  overflow:hidden;
+}
+body::before{
+  content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:
+    radial-gradient(600px 400px at 10% -10%,rgba(224,32,42,.18),transparent 60%),
+    radial-gradient(700px 500px at 110% 10%,rgba(255,214,10,.12),transparent 60%),
+    radial-gradient(500px 500px at 50% 120%,rgba(80,60,200,.15),transparent 60%);
+}
+#app{height:100%;display:flex;flex-direction:column;max-width:600px;margin:auto;position:relative}
+
+/* ---------- Header ---------- */
+header{
+  display:flex;align-items:center;gap:10px;padding:14px 16px;
+  background:linear-gradient(135deg,rgba(224,32,42,.95),rgba(140,15,25,.95));
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border-bottom:1px solid rgba(255,255,255,.08);
+  box-shadow:0 4px 24px rgba(224,32,42,.25);
+  position:relative;z-index:10;
+}
+header h1{
+  flex:1;margin:0;font-size:19px;font-weight:800;letter-spacing:.5px;
+  background:linear-gradient(90deg,#fff,var(--y));-webkit-background-clip:text;
+  background-clip:text;-webkit-text-fill-color:transparent;
+  text-shadow:none;
+}
+header h1 small{display:block;font-size:10px;font-weight:500;letter-spacing:2px;color:rgba(255,255,255,.5);-webkit-text-fill-color:rgba(255,255,255,.5)}
+
+/* ---------- Buttons ---------- */
+button{
+  font:inherit;cursor:pointer;border:0;border-radius:14px;padding:10px 16px;
+  background:linear-gradient(135deg,var(--y),var(--y2));color:#141414;font-weight:700;
+  transition:transform .15s,box-shadow .15s,filter .15s;
+  box-shadow:0 4px 14px rgba(255,214,10,.25);
+}
+button:hover{filter:brightness(1.08)}
+button:active{transform:scale(.96)}
+button.g{
+  background:rgba(255,255,255,.08);color:var(--t);padding:8px 12px;
+  box-shadow:none;border:1px solid rgba(255,255,255,.1);backdrop-filter:blur(10px);
+}
+button.g:hover{background:rgba(255,255,255,.14)}
 button:focus-visible,input:focus-visible{outline:2px solid var(--y);outline-offset:2px}
-input{font:inherit;width:100%;padding:12px 14px;border-radius:12px;border:1px solid #444;background:var(--bg2);color:var(--t)}
-.pad{padding:18px;display:grid;gap:12px}
-.list{flex:1;overflow:auto}
-.row{display:flex;gap:12px;align-items:center;padding:12px 14px;border-bottom:1px solid #262626;cursor:pointer}
-.av{width:44px;height:44px;border-radius:50%;background:var(--y);color:#141414;display:grid;place-items:center;font-weight:800;position:relative;flex:none}
-.av.on::after{content:"";position:absolute;right:0;bottom:0;width:12px;height:12px;border-radius:50%;background:#3ddc84;border:2px solid var(--bg)}
-.sub{color:var(--m);font-size:13px}.sec{padding:10px 14px;color:var(--y);font-weight:700;font-size:14px}
-#msgs{flex:1;overflow:auto;padding:12px;display:flex;flex-direction:column;gap:6px}
-.b{max-width:80%;padding:8px 12px;border-radius:14px;background:var(--bg2);word-wrap:break-word}
-.b.me{align-self:flex-end;background:var(--y);color:#141414}
-.b small{display:block;color:var(--m);font-size:11px}.b.me small{color:#555}
-.st{font-size:38px;line-height:1.1;text-align:center;background:none!important;padding:2px}
-.st b{display:block;font-size:20px;color:var(--y)}
-.bar{display:flex;gap:8px;padding:10px;background:var(--bg2)}
-#stk{display:none;grid-template-columns:repeat(4,1fr);gap:6px;padding:8px;background:var(--bg2)}
-#stk button{background:var(--bg);color:var(--t);border-radius:12px;padding:8px 2px;font-size:12px}
-#stk button span{display:block;font-size:26px}
-.bar button{padding:9px 11px}.tag{background:#3a1b1d;color:var(--y);font-size:12px;padding:6px 14px}
-</style></head><body><div id="app"></div>
+button.icon{width:42px;height:42px;padding:0;display:grid;place-items:center;border-radius:50%;font-size:18px}
+
+/* ---------- Inputs ---------- */
+input{
+  font:inherit;width:100%;padding:13px 16px;border-radius:14px;
+  border:1px solid rgba(255,255,255,.1);background:var(--glass);color:var(--t);
+  transition:border-color .2s,box-shadow .2s;
+}
+input:focus{outline:none;border-color:var(--y);box-shadow:0 0 0 3px rgba(255,214,10,.15)}
+input::placeholder{color:var(--m)}
+
+/* ---------- Layout ---------- */
+.pad{padding:20px;display:grid;gap:14px}
+.list{flex:1;overflow:auto;padding:4px 0;scrollbar-width:thin}
+.list::-webkit-scrollbar{width:6px}
+.list::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:3px}
+
+/* ---------- Rows ---------- */
+.row{
+  display:flex;gap:14px;align-items:center;padding:13px 16px;
+  margin:2px 10px;border-radius:16px;cursor:pointer;
+  transition:background .2s,transform .1s;
+  background:var(--glass);border:1px solid rgba(255,255,255,.04);
+}
+.row:hover{background:rgba(255,255,255,.06);border-color:rgba(255,214,10,.2)}
+.row:active{transform:scale(.985)}
+.row .meta{flex:1;min-width:0}
+.row .meta b{display:block;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .sub{color:var(--m);font-size:12.5px;margin-top:1px}
+.row .last{color:var(--m);font-size:12px;max-width:140px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* ---------- Avatar ---------- */
+.av{
+  width:48px;height:48px;border-radius:50%;flex:none;
+  background:linear-gradient(135deg,var(--y),var(--y2));
+  color:#141414;display:grid;place-items:center;font-weight:800;font-size:18px;
+  position:relative;overflow:hidden;box-shadow:0 0 0 2px rgba(255,214,10,.2);
+}
+.av img{width:100%;height:100%;object-fit:cover;display:block}
+.av.on::after{
+  content:"";position:absolute;right:1px;bottom:1px;width:13px;height:13px;
+  border-radius:50%;background:var(--ok);border:2.5px solid var(--bg);
+  box-shadow:0 0 8px var(--ok);animation:pulse 2s infinite;
+}
+@keyframes pulse{0%,100%{box-shadow:0 0 6px var(--ok)}50%{box-shadow:0 0 14px var(--ok)}}
+.av.big{width:96px;height:96px;font-size:38px;cursor:pointer;box-shadow:0 0 0 3px rgba(255,214,10,.3),var(--neon)}
+
+/* ---------- Section ---------- */
+.sec{
+  padding:16px 20px 8px;color:var(--y);font-weight:700;font-size:11px;
+  letter-spacing:2px;text-transform:uppercase;opacity:.85;
+}
+
+/* ---------- Chat messages ---------- */
+#msgs{
+  flex:1;overflow:auto;padding:16px 14px;display:flex;flex-direction:column;gap:8px;
+  scrollbar-width:thin;background:radial-gradient(circle at 50% 0,rgba(255,214,10,.03),transparent 70%);
+}
+#msgs::-webkit-scrollbar{width:6px}
+#msgs::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:3px}
+.b{
+  max-width:80%;padding:9px 13px;border-radius:18px;
+  background:var(--bg3);word-wrap:break-word;position:relative;
+  border:1px solid rgba(255,255,255,.05);animation:in .25s ease;
+}
+@keyframes in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.b.me{
+  align-self:flex-end;
+  background:linear-gradient(135deg,var(--y),var(--y2));color:#141414;
+  border-color:transparent;box-shadow:0 4px 16px rgba(255,214,10,.2);
+}
+.b small{display:block;color:var(--m);font-size:10.5px;margin-top:3px}
+.b.me small{color:rgba(20,20,20,.6)}
+.b .who{font-size:11px;color:var(--y);font-weight:700;margin-bottom:2px}
+.b.me .who{color:rgba(20,20,20,.75)}
+.b img{max-width:100%;border-radius:12px;display:block;margin:2px 0}
+.b audio{max-width:100%;height:36px}
+
+/* Sticker */
+.st{
+  font-size:44px;line-height:1.1;text-align:center;background:none!important;
+  padding:4px;border:0!important;box-shadow:none!important;
+}
+.st b{display:block;font-size:15px;color:var(--y);margin-top:2px}
+.st.me b{color:#141414}
+.st small{text-align:center}
+
+/* ---------- Composer ---------- */
+.bar{
+  display:flex;gap:8px;padding:12px 14px;align-items:flex-end;
+  background:rgba(18,18,31,.85);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border-top:1px solid rgba(255,255,255,.06);
+}
+.bar input{flex:1;border-radius:22px;padding:12px 18px}
+.bar button{padding:10px 14px;border-radius:50%;width:44px;height:44px;display:grid;place-items:center}
+
+/* ---------- Sticker panel ---------- */
+#stk{
+  display:none;grid-template-columns:repeat(4,1fr);gap:8px;padding:12px;
+  background:rgba(18,18,31,.95);backdrop-filter:blur(20px);
+  border-top:1px solid rgba(255,214,10,.15);max-height:240px;overflow:auto;
+  animation:slideUp .2s ease;
+}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:none}}
+#stk button{
+  background:rgba(255,255,255,.05);color:var(--t);border-radius:14px;
+  padding:10px 4px;font-size:11px;box-shadow:none;border:1px solid rgba(255,255,255,.06);
+  display:flex;flex-direction:column;align-items:center;gap:2px;
+}
+#stk button:hover{background:rgba(255,214,10,.12);border-color:rgba(255,214,10,.3)}
+#stk button span{font-size:26px}
+
+/* ---------- Tags / banners ---------- */
+.tag{
+  background:linear-gradient(90deg,rgba(224,32,42,.25),rgba(255,59,78,.15));
+  color:#ffb0b8;font-size:12.5px;padding:10px 16px;margin:8px 14px;
+  border-radius:12px;border:1px solid rgba(224,32,42,.3);text-align:center;
+}
+.tag b{color:var(--y)}
+
+/* ---------- Login / Profile screens ---------- */
+.screen{flex:1;display:flex;flex-direction:column;overflow:auto}
+.hero{padding:28px 20px 10px;text-align:center}
+.hero .logo{
+  font-size:38px;font-weight:900;letter-spacing:-1px;
+  background:linear-gradient(135deg,#fff,var(--y) 70%);
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  margin:0 0 4px;line-height:1.1;
+}
+.hero p{color:var(--m);margin:0;font-size:13.5px}
+
+.profile-card{
+  margin:20px 16px;padding:24px 20px;border-radius:24px;
+  background:var(--glass);backdrop-filter:blur(20px);
+  border:1px solid rgba(255,255,255,.08);box-shadow:var(--shadow);
+  display:flex;flex-direction:column;align-items:center;gap:14px;
+}
+.profile-card .av-wrap{position:relative;margin-bottom:6px}
+.profile-card .badge{
+  position:absolute;right:-2px;bottom:-2px;width:30px;height:30px;border-radius:50%;
+  background:linear-gradient(135deg,var(--y),var(--y2));color:#141414;display:grid;place-items:center;
+  font-size:14px;border:3px solid var(--bg);box-shadow:0 2px 8px rgba(0,0,0,.4);
+}
+.profile-card h2{margin:0;font-size:20px;font-weight:700}
+.profile-card .phone{color:var(--m);font-size:13px;margin:0}
+.profile-card .field{width:100%}
+.profile-card label{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--m);display:block;margin-bottom:6px}
+
+/* ---------- Toast ---------- */
+#toast{
+  position:fixed;top:calc(env(safe-area-inset-top) + 14px);left:50%;transform:translateX(-50%) translateY(-120%);
+  background:linear-gradient(135deg,rgba(224,32,42,.97),rgba(140,15,25,.97));
+  backdrop-filter:blur(20px);color:#fff;padding:12px 20px;border-radius:16px;
+  font-weight:600;font-size:14px;box-shadow:0 12px 40px rgba(224,32,42,.4);
+  z-index:1000;max-width:calc(100% - 32px);border:1px solid rgba(255,255,255,.15);
+  transition:transform .35s cubic-bezier(.34,1.56,.64,1);pointer-events:none;
+  display:flex;align-items:center;gap:10px;
+}
+#toast.show{transform:translateX(-50%) translateY(0)}
+#toast .t-av{width:34px;height:34px;border-radius:50%;background:var(--y);color:#141414;display:grid;place-items:center;font-weight:800;font-size:14px;overflow:hidden;flex:none}
+#toast .t-av img{width:100%;height:100%;object-fit:cover}
+#toast .t-txt{min-width:0}
+#toast .t-txt b{display:block;font-size:13px}
+#toast .t-txt span{display:block;font-size:12.5px;opacity:.9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px}
+
+/* ---------- Empty state ---------- */
+.empty{text-align:center;padding:40px 20px;color:var(--m)}
+.empty .big{font-size:48px;margin-bottom:10px;opacity:.4}
+
+/* ---------- Badge unread ---------- */
+.row .badge-unread{
+  background:var(--r2);color:#fff;font-size:11px;font-weight:800;
+  min-width:20px;height:20px;border-radius:10px;display:grid;place-items:center;
+  padding:0 6px;box-shadow:0 0 10px rgba(255,59,78,.5);
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="toast"><div class="t-av" id="tAv"></div><div class="t-txt"><b id="tName"></b><span id="tMsg"></span></div></div>
 <script>
-const $=s=>document.querySelector(s);let ws,me,S={users:{},groups:{},online:[]},cur=null,H={},low=localStorage.low==='1';
-const ST=[['😄','WUI!'],['😠','TA A BAZAR?'],['👍','VAMOS KUIAR'],['🤝','MANO'],['🎧','MÔ DEEJAY'],['😎','TA FIXE'],['👋','BAZEI'],['😮','XÊ!'],['🥳','KANDENGUE'],['🕶️','WI RINJO'],['😌','NÃO TEM MACA'],['💃','ESTÁ A BATER'],['🏃','TÔ A VIR'],['👀','TALA'],['🙌','BUÉ DE FIXE'],['🤙','MBORA'],['✌️','SEM STRESS'],['🔥','TÁ FOGO!'],['👌','BOA!'],['😁','TÁ SUAVE']];
-const esc=s=>s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const $=s=>document.querySelector(s);
+let ws,me,S={users:{},groups:{},online:[]},cur=null,H={},low=localStorage.low==='1';
+let unread={},lastMsg={},profilePhoto=null,notifReady=false;
+
+/* ---------- Stickers ---------- */
+const ST=[['😄','WUI!'],['😠','TA A BAZAR?'],['👍','VAMOS KUIAR'],['🤝','MANO'],['🎧','MÔ DEEJAY'],['😎','TA FIXE'],['👋','BAZEI'],['😮','XÊ!'],['🥳','KANDENGUE'],['🕶️','WI RIJO'],['😌','NÃO TEM MACA'],['💃','ESTÁ A BATER'],['🏃','TÔ A VIR'],['👀','TALA'],['🙌','BUÉ DE FIXE'],['🤙','MBORA'],['✌️','SEM STRESS'],['🔥','TÁ FOGO!'],['👌','BOA!'],['😁','TÁ SUAVE']];
+
+/* ---------- Helpers ---------- */
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const ini=n=>esc((n||'?').trim()[0].toUpperCase());
 const dmId=(a,b)=>'d:'+[a,b].sort().join('_');
 const name=p=>(S.users[p]||{}).name||p;
+const photo=p=>(S.users[p]||{}).photo||null;
+const avatar=(p,cls='')=>{
+  const ph=photo(p);
+  return `<div class="av ${cls}">${ph?`<img src="${esc(ph)}" alt="">`:ini(name(p))}</div>`;
+};
+const previewOf=m=>{
+  if(!m)return'';
+  if(m.kind==='image')return'📷 Imagem';
+  if(m.kind==='audio')return'🎤 Áudio';
+  if(m.kind==='sticker')return'🎨 Sticker · '+(m.body.split('|')[1]||'');
+  return m.body;
+};
+
+/* ---------- Notifications ---------- */
+async function initNotif(){
+  if(!('Notification'in window))return;
+  if(Notification.permission==='granted'){notifReady=true;return}
+  if(Notification.permission==='default'){
+    try{const p=await Notification.requestPermission();notifReady=p==='granted'}catch(e){}
+  }
+}
+function updateTitle(){
+  const n=Object.values(unread).reduce((a,b)=>a+b,0);
+  document.title=(n?'('+n+') ':'')+'WUICHAT';
+  if('setAppBadge'in navigator)navigator.setAppBadge(n||0).catch(()=>{});
+}
+function notify(msg){
+  const from=name(msg.from),txt=previewOf(msg),chat=msg.chat;
+  // toast in-app
+  const av=$('#tAv'),nm=$('#tName'),ms=$('#tMsg');
+  if(photo(msg.from))av.innerHTML=`<img src="${esc(photo(msg.from))}">`;else av.textContent=from[0].toUpperCase();
+  nm.textContent=from;ms.textContent=txt;
+  $('#toast').classList.add('show');
+  clearTimeout(notify._t);
+  notify._t=setTimeout(()=>$('#toast').classList.remove('show'),3200);
+  // vibration
+  navigator.vibrate&&navigator.vibrate([40,60,40]);
+  // system notification
+  if(notifReady&&document.visibilityState!=='visible'){
+    try{
+      const n=new Notification('WUICHAT · '+from,{
+        body:txt,icon:'icon.svg',badge:'icon.svg',tag:chat,silent:false,
+        data:{chat}
+      });
+      n.onclick=()=>{window.focus();openChat(msg.chat);n.close()};
+    }catch(e){}
+  }
+}
+
+/* ---------- WebSocket ---------- */
 function conn(){
   ws=new WebSocket((location.protocol==='https:'?'wss://':'ws://')+location.host);
   ws.onopen=()=>{if(localStorage.token)send({t:'login',token:localStorage.token})};
-  ws.onmessage=e=>{const m=JSON.parse(e.data);
-    if(m.t==='ready'){me=m.me;Object.assign(S,m);cur?chat():home()}
-    if(m.t==='users'){Object.assign(S,m);if(!cur)home()}
+  ws.onmessage=e=>{
+    const m=JSON.parse(e.data);
+    if(m.t==='ready'){
+      me=m.me;Object.assign(S,m);
+      // guarda a minha foto
+      profilePhoto=photo(me);
+      cur?chat():home();
+    }
+    if(m.t==='users'){
+      Object.assign(S,m);
+      if(!cur)home();
+      else if(cur.id.startsWith('d:')||cur.id.startsWith('g:')){
+        // atualiza header se necessário
+      }
+    }
     if(m.t==='err'){localStorage.removeItem('token');login()}
     if(m.t==='hist'){H[m.chat]=m.msgs;if(cur&&cur.id===m.chat)draw()}
-    if(m.t==='msg'){(H[m.msg.chat]=H[m.msg.chat]||[]).push(m.msg);if(cur&&cur.id===m.msg.chat)draw();if(m.msg.from!==me)navigator.vibrate&&navigator.vibrate(60)}};
+    if(m.t==='msg'){
+      const msg=m.msg;
+      (H[msg.chat]=H[msg.chat]||[]).push(msg);
+      lastMsg[msg.chat]=msg;
+      if(msg.from!==me){
+        const open=cur&&cur.id===msg.chat;
+        if(!open){
+          unread[msg.chat]=(unread[msg.chat]||0)+1;
+          updateTitle();
+          notify(msg);
+        }
+      }
+      if(cur&&cur.id===msg.chat){unread[msg.chat]=0;updateTitle();draw()}
+      else if(!cur){home()}
+    }
+  };
   ws.onclose=()=>setTimeout(conn,2000);
 }
 const send=o=>ws.readyState===1&&ws.send(JSON.stringify(o));
-const post=async(u,b)=>{const r=await fetch(u,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)});return{ok:r.ok,j:await r.json()}};
-function login(){cur=null;$('#app').innerHTML=`<header><h1>WUICHAT</h1></header><div class="pad" id="lg"><p>Fala como nós. Entra para testar.</p><input id="n" placeholder="O teu nome" value="${esc(localStorage.name||'')}"><input id="p" type="tel" placeholder="Telemóvel (9 dígitos)" value="${esc(localStorage.phone||'')}"><button id="go">Receber código SMS</button></div>`;
-  $('#go').onclick=async()=>{const name=$('#n').value,phone=$('#p').value;localStorage.name=name;localStorage.phone=phone;
-    const r=await post('/api/code',{name,phone});if(!r.ok)return alert(r.j.msg);
-    $('#lg').innerHTML=`<p>Escreve o código de 6 dígitos enviado por SMS.</p>${r.j.dev?`<p class="tag">Modo teste: o teu código é <b>${esc(r.j.dev)}</b></p>`:''}<input id="c" inputmode="numeric" maxlength="6" placeholder="Código"><button id="vf">Confirmar</button>`;
-    $('#vf').onclick=async()=>{const v=await post('/api/verify',{name,phone,code:$('#c').value});if(!v.ok)return alert(v.j.msg);localStorage.token=v.j.token;send({t:'login',token:v.j.token})}}}
-async function up(blob,ext){const r=await fetch('/api/upload?ext='+ext+'&token='+localStorage.token,{method:'POST',body:blob});if(!r.ok){alert('Falha no envio');return}return (await r.json()).url}
-function wire(out){
-  $('#im').onclick=()=>$('#fi').click();
-  $('#fi').onchange=async e=>{const f=e.target.files[0];if(!f)return;const bm=await createImageBitmap(f),k=Math.min(1,1024/Math.max(bm.width,bm.height)),c=document.createElement('canvas');c.width=bm.width*k;c.height=bm.height*k;c.getContext('2d').drawImage(bm,0,0,c.width,c.height);
-    c.toBlob(async b=>{const u=await up(b,'jpg');u&&out('image',u)},'image/jpeg',.7);e.target.value=''};
-  let rec,ch=[];
-  $('#mc').onclick=async()=>{
-    if(rec&&rec.state==='recording'){rec.stop();return}
-    try{const st=await navigator.mediaDevices.getUserMedia({audio:true});rec=new MediaRecorder(st);ch=[];
-      rec.ondataavailable=e=>ch.push(e.data);
-      rec.onstop=async()=>{st.getTracks().forEach(t=>t.stop());$('#mc').textContent='🎤';const b=new Blob(ch,{type:rec.mimeType});const u=await up(b,rec.mimeType.includes('mp4')?'m4a':'webm');u&&out('audio',u)};
-      rec.start();$('#mc').textContent='⏹️'}catch{alert('Permite o acesso ao microfone.')}}}
-function home(){cur=null;
-  const gs=Object.entries(S.groups).filter(([,g])=>g.members.includes(me)),us=Object.values(S.users).filter(u=>u.phone!==me);
-  $('#app').innerHTML=`<header><h1>WUICHAT</h1><button class="g" id="lb">${low?'Sem saldo: ON':'Sem saldo: OFF'}</button><button class="g" id="ng">+ Grupo</button></header>${low?'<div class="tag">Modo sem saldo: só texto. Imagens, áudio e stickers ficam bloqueados.</div>':''}<div class="list"><div class="sec">Grupos</div>${gs.map(([id,g])=>`<div class="row" data-id="g:${id}" data-n="${esc(g.name)}"><div class="av">${ini(g.name)}</div><div><b>${esc(g.name)}</b><div class="sub">${g.members.length} pessoas</div></div></div>`).join('')}<div class="sec">Pessoas</div>${us.map(u=>`<div class="row" data-id="${dmId(me,u.phone)}" data-n="${esc(u.name)}"><div class="av ${S.online.includes(u.phone)?'on':''}">${ini(u.name)}</div><div><b>${esc(u.name)}</b><div class="sub">${S.online.includes(u.phone)?'online':'offline'}</div></div></div>`).join('')||'<p class="sub pad">Ainda ninguém. Convida amigos para testar.</p>'}</div>`;
-  document.querySelectorAll('.row').forEach(r=>r.onclick=()=>{cur={id:r.dataset.id,n:r.dataset.n};send({t:'hist',chat:cur.id});chat()});
-  $('#lb').onclick=()=>{low=!low;localStorage.low=low?'1':'0';home()};
-  $('#ng').onclick=()=>{const n=prompt('Nome do grupo:');if(!n)return;const ph=prompt('Telemóveis dos membros, separados por vírgula:','');send({t:'group',name:n,members:(ph||'').split(',').map(x=>x.replace(/\D/g,'')).filter(Boolean)})}}
+const post=async(u,b)=>{const r=await fetch(u,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)});return{ok:r.ok,j:await r.json().catch(()=>({}))}};
+
+/* ---------- Login ---------- */
+function login(){
+  cur=null;
+  $('#app').innerHTML=`
+  <header><h1>WUICHAT<small>FALA COMO NÓS</small></h1></header>
+  <div class="screen">
+    <div class="hero">
+      <p class="logo">WUICHAT</p>
+      <p>Entra para testar o futuro da conversa.</p>
+    </div>
+    <div class="pad" id="lg">
+      <input id="n" placeholder="O teu nome" value="${esc(localStorage.name||'')}">
+      <input id="p" type="tel" placeholder="Telemóvel (9 dígitos)" value="${esc(localStorage.phone||'')}">
+      <button id="go">Receber código SMS</button>
+    </div>
+  </div>`;
+  $('#go').onclick=async()=>{
+    const nameV=$('#n').value.trim(),phone=$('#p').value.trim();
+    localStorage.name=nameV;localStorage.phone=phone;
+    const r=await post('/api/code',{name:nameV,phone});
+    if(!r.ok)return alert(r.j.msg);
+    $('#lg').innerHTML=`
+      <p style="text-align:center;color:var(--m);margin:0">Escreve o código de 6 dígitos enviado por SMS.</p>
+      ${r.j.dev?`<div class="tag">Modo teste: o teu código é <b>${esc(r.j.dev)}</b></div>`:''}
+      <input id="c" inputmode="numeric" maxlength="6" placeholder="Código">
+      <button id="vf">Confirmar</button>`;
+    $('#vf').onclick=async()=>{
+      const v=await post('/api/verify',{name:nameV,phone,code:$('#c').value});
+      if(!v.ok)return alert(v.j.msg);
+      localStorage.token=v.j.token;
+      initNotif();
+      send({t:'login',token:v.j.token});
+    };
+  };
+}
+
+/* ---------- Upload ---------- */
+async function up(blob,ext){
+  const r=await fetch('/api/upload?ext='+ext+'&token='+localStorage.token,{method:'POST',body:blob});
+  if(!r.ok){alert('Falha no envio');return}
+  return (await r.json()).url;
+}
+
+/* ---------- Home ---------- */
+function home(){
+  cur=null;updateTitle();
+  const gs=Object.entries(S.groups).filter(([,g])=>g.members.includes(me));
+  const us=Object.values(S.users).filter(u=>u.phone!==me);
+  $('#app').innerHTML=`
+  <header>
+    <h1>WUICHAT<small>FALA COMO NÓS</small></h1>
+    <button class="g icon" id="pf" title="Perfil">${avatar(me)}</button>
+    <button class="g icon" id="ng" title="Novo grupo">+</button>
+  </header>
+  ${low?'<div class="tag">⚠️ Modo sem saldo: só texto. Imagens, áudio e stickers bloqueados.</div>':''}
+  <div class="list">
+    <div class="sec">Grupos</div>
+    ${gs.map(([id,g])=>{
+      const un=unread['g:'+id]||0,lm=lastMsg['g:'+id];
+      return `<div class="row" data-id="g:${id}" data-n="${esc(g.name)}">
+        <div class="av">${ini(g.name)}</div>
+        <div class="meta"><b>${esc(g.name)}</b><div class="sub">${g.members.length} pessoas</div></div>
+        ${un?`<div class="badge-unread">${un}</div>`:lm?`<div class="last">${esc(previewOf(lm))}</div>`:''}
+      </div>`;
+    }).join('')||'<div class="empty"><div class="big">👥</div>Sem grupos ainda</div>'}
+    <div class="sec">Pessoas</div>
+    ${us.map(u=>{
+      const id=dmId(me,u.phone);
+      const un=unread[id]||0,lm=lastMsg[id],on=S.online.includes(u.phone);
+      return `<div class="row" data-id="${id}" data-n="${esc(u.name)}">
+        ${avatar(u.phone,' '+(on?'on':''))}
+        <div class="meta"><b>${esc(u.name)}</b><div class="sub">${on?'online':'offline'}</div></div>
+        ${un?`<div class="badge-unread">${un}</div>`:lm?`<div class="last">${esc(previewOf(lm))}</div>`:''}
+      </div>`;
+    }).join('')||'<div class="empty"><div class="big">🫥</div>Ainda ninguém.<br>Convida amigos para testar.</div>'}
+  </div>`;
+  document.querySelectorAll('.row').forEach(r=>r.onclick=()=>{
+    const id=r.dataset.id;
+    unread[id]=0;updateTitle();
+    cur={id,n:r.dataset.n};send({t:'hist',chat:id});chat();
+  });
+  $('#ng').onclick=()=>{
+    const n=prompt('Nome do grupo:');if(!n)return;
+    const ph=prompt('Telemóveis dos membros, separados por vírgula:','');
+    send({t:'group',name:n,members:(ph||'').split(',').map(x=>x.replace(/\D/g,'')).filter(Boolean)});
+  };
+  $('#pf').onclick=profile;
+}
+
+/* ---------- Profile ---------- */
+function profile(){
+  cur=null;
+  const ph=photo(me);
+  $('#app').innerHTML=`
+  <header><button class="g icon" id="bk">←</button><h1>O TEU PERFIL</h1></header>
+  <div class="screen">
+    <div class="profile-card">
+      <div class="av-wrap">
+        <div class="av big" id="pav">${ph?`<img src="${esc(ph)}">`:ini(name(me))}</div>
+        <div class="badge">✎</div>
+      </div>
+      <h2 id="pn">${esc(name(me))}</h2>
+      <p class="phone">+244 ${esc(me)}</p>
+      <div class="field">
+        <label>Nome</label>
+        <input id="nm" value="${esc(name(me))}" maxlength="30">
+      </div>
+      <button id="sv" style="width:100%">Guardar alterações</button>
+      <button class="g" id="ch" style="width:100%">📷 Alterar foto</button>
+    </div>
+    <div class="pad">
+      <button class="g" id="lo">Terminar sessão</button>
+    </div>
+  </div>`;
+  $('#bk').onclick=home;
+  $('#pav').onclick=()=>$('#fi').click();
+  $('#ch').onclick=()=>$('#fi').click();
+  const fi=document.createElement('input');fi.type='file';fi.accept='image/*';fi.id='fi';fi.hidden=true;
+  document.body.appendChild(fi);
+  fi.onchange=async e=>{
+    const f=e.target.files[0];if(!f)return;
+    const bm=await createImageBitmap(f),mx=512,k=Math.min(1,mx/Math.max(bm.width,bm.height));
+    const c=document.createElement('canvas');c.width=Math.round(bm.width*k);c.height=Math.round(bm.height*k);
+    c.getContext('2d').drawImage(bm,0,0,c.width,c.height);
+    c.toBlob(async b=>{
+      const u=await up(b,'jpg');
+      if(!u)return;
+      profilePhoto=u;
+      await post('/api/profile',{token:localStorage.token,photo:u});
+      S.users[me]=S.users[me]||{};S.users[me].photo=u;
+      $('#pav').innerHTML=`<img src="${esc(u)}">`;
+    },'image/jpeg',.82);
+  };
+  $('#sv').onclick=async()=>{
+    const nm=$('#nm').value.trim();
+    if(!nm)return alert('O nome não pode estar vazio.');
+    const r=await post('/api/profile',{token:localStorage.token,name:nm});
+    if(!r.ok)return alert(r.j.msg||'Falha ao guardar');
+    S.users[me]=S.users[me]||{};S.users[me].name=nm;
+    localStorage.name=nm;
+    $('#pn').textContent=nm;
+    alert('Perfil atualizado!');
+    // força broadcast para todos verem
+    send({t:'refresh'});
+  };
+  $('#lo').onclick=()=>{
+    if(!confirm('Terminar sessão?'))return;
+    localStorage.removeItem('token');
+    send({t:'logout'});
+    login();
+  };
+}
+
+/* ---------- Chat ---------- */
+function openChat(id){
+  if(!S.groups[id.slice(2)]&&!S.users)return;
+  cur={id,n:name(id.startsWith('g:')?id:S.users[id.slice(2).split('_').find(x=>x!==me)]||'Chat')};
+  send({t:'hist',chat:id});chat();
+}
 function chat(){
-  $('#app').innerHTML=`<header><button class="g" id="bk">←</button><h1>${esc(cur.n)}</h1></header><div id="msgs"></div><div id="stk">${ST.map((s,i)=>`<button data-i="${i}"><span>${s[0]}</span>${s[1]}</button>`).join('')}</div><div class="bar"><input id="t" placeholder="Mensagem..." autocomplete="off">${low?'':'<button id="sb">😄</button><button id="im">📷</button><button id="mc">🎤</button><input id="fi" type="file" accept="image/*" hidden>'}<button id="sd">Enviar</button></div>`;
+  const grp=cur.id.startsWith('g:');
+  const ph=grp?null:photo(cur.id.slice(2).split('_').find(x=>x!==me));
+  const on=grp?false:S.online.includes(cur.id.slice(2).split('_').find(x=>x!==me));
+  const headAv=grp?`<div class="av">${ini(cur.n)}</div>`:`<div class="av ${on?'on':''}">${ph?`<img src="${esc(ph)}">`:ini(cur.n)}</div>`;
+  $('#app').innerHTML=`
+  <header>
+    <button class="g icon" id="bk">←</button>
+    ${headAv}
+    <h1 style="font-size:16px">${esc(cur.n)}<small id="st">${grp?'grupo':(on?'online':'offline')}</small></h1>
+  </header>
+  <div id="msgs"></div>
+  <div id="stk">${ST.map((s,i)=>`<button data-i="${i}"><span>${s[0]}</span>${s[1]}</button>`).join('')}</div>
+  <div class="bar">
+    <input id="t" placeholder="Escreve uma mensagem..." autocomplete="off">
+    ${low?'':`<button class="icon" id="sb" title="Stickers">😄</button>
+    <button class="icon" id="im" title="Imagem">📷</button>
+    <button class="icon" id="mc" title="Áudio">🎤</button>
+    <input id="fi" type="file" accept="image/*" hidden>`}
+    <button class="icon" id="sd" title="Enviar">➤</button>
+  </div>`;
   $('#bk').onclick=home;draw();
   const out=(kind,body)=>send({t:'msg',to:cur.id.startsWith('g:')?cur.id:cur.id.slice(2).split('_').find(x=>x!==me)||me,kind,body});
   const go=()=>{const v=$('#t').value.trim();if(v){out('text',v);$('#t').value=''}};
-  $('#sd').onclick=go;$('#t').onkeydown=e=>e.key==='Enter'&&go();
-  if(!low){wire(out);$('#sb').onclick=()=>{const s=$('#stk');s.style.display=s.style.display==='grid'?'none':'grid'};
-    document.querySelectorAll('#stk button').forEach(b=>b.onclick=()=>{out('sticker',ST[b.dataset.i].join('|'));$('#stk').style.display='none'})}}
-function draw(){const box=$('#msgs');if(!box)return;const grp=cur.id.startsWith('g:');
-  box.innerHTML=(H[cur.id]||[]).map(m=>{const mine=m.from===me,t=new Date(m.ts).toLocaleTimeString('pt',{hour:'2-digit',minute:'2-digit'}),who=grp&&!mine?`<small>${esc(name(m.from))}</small>`:'';
-    if(m.kind==='image'||m.kind==='audio'){const c=low?'['+(m.kind==='image'?'imagem':'áudio')+' · modo sem saldo]':m.kind==='image'?`<img src="${esc(m.body)}" loading="lazy" style="max-width:100%;border-radius:10px;display:block">`:`<audio controls preload="none" src="${esc(m.body)}"></audio>`;return `<div class="b ${mine?'me':''}">${who}${c}<small>${t}</small></div>`}
-    if(m.kind==='sticker'){const[e,w]=m.body.split('|');return low?`<div class="b ${mine?'me':''}">${who}[sticker] ${esc(w)}<small>${t}</small></div>`:`<div class="b st ${mine?'me':''}" style="align-self:${mine?'flex-end':'flex-start'}">${who}${e}<b>${esc(w)}</b><small>${t}</small></div>`}
-    return `<div class="b ${mine?'me':''}">${who}${esc(m.body)}<small>${t}</small></div>`}).join('');box.scrollTop=box.scrollHeight}
-if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js');
-login();conn();
-</script></body></html>
+  $('#sd').onclick=go;
+  $('#t').onkeydown=e=>e.key==='Enter'&&go();
+  if(!low){
+    wire(out);
+    $('#sb').onclick=()=>{const s=$('#stk');s.style.display=s.style.display==='grid'?'none':'grid'};
+    document.querySelectorAll('#stk button').forEach(b=>b.onclick=()=>{
+      out('sticker',ST[b.dataset.i].join('|'));$('#stk').style.display='none';
+    });
+  }
+}
+
+/* ---------- Wire media ---------- */
+function wire(out){
+  $('#im').onclick=()=>$('#fi').click();
+  $('#fi').onchange=async e=>{
+    const f=e.target.files[0];if(!f)return;
+    const bm=await createImageBitmap(f),k=Math.min(1,1024/Math.max(bm.width,bm.height));
+    const c=document.createElement('canvas');c.width=Math.round(bm.width*k);c.height=Math.round(bm.height*k);
+    c.getContext('2d').drawImage(bm,0,0,c.width,c.height);
+    c.toBlob(async b=>{const u=await up(b,'jpg');u&&out('image',u)},'image/jpeg',.72);
+    e.target.value='';
+  };
+  let rec,ch=[];
+  $('#mc').onclick=async()=>{
+    if(rec&&rec.state==='recording'){rec.stop();return}
+    try{
+      const st=await navigator.mediaDevices.getUserMedia({audio:true});
+      rec=new MediaRecorder(st);ch=[];
+      rec.ondataavailable=e=>ch.push(e.data);
+      rec.onstop=async()=>{
+        st.getTracks().forEach(t=>t.stop());$('#mc').textContent='🎤';
+        const b=new Blob(ch,{type:rec.mimeType});
+        const u=await up(b,rec.mimeType.includes('mp4')?'m4a':'webm');
+        u&&out('audio',u);
+      };
+      rec.start();$('#mc').textContent='⏹️';
+    }catch{alert('Permite o acesso ao microfone.')}
+  };
+}
+
+/* ---------- Draw messages ---------- */
+function draw(){
+  const box=$('#msgs');if(!box)return;
+  const grp=cur.id.startsWith('g:');
+  box.innerHTML=(H[cur.id]||[]).map(m=>{
+    const mine=m.from===me;
+    const t=new Date(m.ts).toLocaleTimeString('pt',{hour:'2-digit',minute:'2-digit'});
+    const who=grp&&!mine?`<div class="who">${esc(name(m.from))}</div>`:'';
+    if(m.kind==='image'||m.kind==='audio'){
+      const c=low?'<i style="opacity:.6">['+(m.kind==='image'?'imagem':'áudio')+' · modo sem saldo]</i>'
+        :m.kind==='image'?`<img src="${esc(m.body)}" loading="lazy" alt="">`
+        :`<audio controls preload="none" src="${esc(m.body)}"></audio>`;
+      return `<div class="b ${mine?'me':''}">${who}${c}<small>${t}</small></div>`;
+    }
+    if(m.kind==='sticker'){
+      const[e,w]=m.body.split('|');
+      return low?`<div class="b ${mine?'me':''}">${who}[sticker] ${esc(w)}<small>${t}</small></div>`
+        :`<div class="b st ${mine?'me':''}" style="align-self:${mine?'flex-end':'flex-start'}">${who}${e}<b>${esc(w)}</b><small>${t}</small></div>`;
+    }
+    return `<div class="b ${mine?'me':''}">${who}${esc(m.body)}<small>${t}</small></div>`;
+  }).join('');
+  box.scrollTop=box.scrollHeight;
+}
+
+/* ---------- Startup ---------- */
+if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js');
+document.addEventListener('visibilitychange',()=>{
+  if(document.visibilityState==='visible'){updateTitle()}
+});
+login();
+conn();
+</script>
+</body>
+</html>
