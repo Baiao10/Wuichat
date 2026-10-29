@@ -353,7 +353,7 @@ const post=async(u,b)=>{const r=await fetch(u,{method:'POST',headers:{'Content-T
 function login(){
   cur=null;
   $('#app').innerHTML=`
-  <header><h1>WUICHAT<small>FALA COMO NÓS</small></h1></header>
+  <header><h1>WUICHAT<small></small></h1></header>
   <div class="screen">
     <div class="hero">
       <p class="logo">WUICHAT</p>
@@ -399,7 +399,7 @@ function home(){
   const us=Object.values(S.users).filter(u=>u.phone!==me);
   $('#app').innerHTML=`
   <header>
-    <h1>WUICHAT<small>FALA COMO NÓS</small></h1>
+    <h1>WUICHAT<small></small></h1>
     <button class="g icon" id="pf" title="Perfil">${avatar(me)}</button>
     <button class="g icon" id="ng" title="Novo grupo">+</button>
   </header>
