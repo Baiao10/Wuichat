@@ -1,0 +1,92 @@
+<!doctype html><html lang="pt"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#141414"><link rel="manifest" href="manifest.json"><link rel="icon" href="icon.svg">
+<title>WUICHAT</title>
+<style>
+:root{--bg:#141414;--bg2:#1f1f1f;--y:#FFD60A;--r:#E0202A;--t:#f5f5f5;--m:#9a9a9a}
+*{box-sizing:border-box}html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--t);font:16px system-ui,sans-serif;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+#app{height:100%;display:flex;flex-direction:column;max-width:560px;margin:auto}
+header{display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--r)}
+header h1{flex:1;margin:0;font-size:20px;font-weight:800}
+button{font:inherit;cursor:pointer;border:0;border-radius:20px;padding:9px 16px;background:var(--y);color:#141414;font-weight:700}
+button.g{background:transparent;color:var(--t);padding:6px 10px}
+button:focus-visible,input:focus-visible{outline:2px solid var(--y);outline-offset:2px}
+input{font:inherit;width:100%;padding:12px 14px;border-radius:12px;border:1px solid #444;background:var(--bg2);color:var(--t)}
+.pad{padding:18px;display:grid;gap:12px}
+.list{flex:1;overflow:auto}
+.row{display:flex;gap:12px;align-items:center;padding:12px 14px;border-bottom:1px solid #262626;cursor:pointer}
+.av{width:44px;height:44px;border-radius:50%;background:var(--y);color:#141414;display:grid;place-items:center;font-weight:800;position:relative;flex:none}
+.av.on::after{content:"";position:absolute;right:0;bottom:0;width:12px;height:12px;border-radius:50%;background:#3ddc84;border:2px solid var(--bg)}
+.sub{color:var(--m);font-size:13px}.sec{padding:10px 14px;color:var(--y);font-weight:700;font-size:14px}
+#msgs{flex:1;overflow:auto;padding:12px;display:flex;flex-direction:column;gap:6px}
+.b{max-width:80%;padding:8px 12px;border-radius:14px;background:var(--bg2);word-wrap:break-word}
+.b.me{align-self:flex-end;background:var(--y);color:#141414}
+.b small{display:block;color:var(--m);font-size:11px}.b.me small{color:#555}
+.st{font-size:38px;line-height:1.1;text-align:center;background:none!important;padding:2px}
+.st b{display:block;font-size:20px;color:var(--y)}
+.bar{display:flex;gap:8px;padding:10px;background:var(--bg2)}
+#stk{display:none;grid-template-columns:repeat(4,1fr);gap:6px;padding:8px;background:var(--bg2)}
+#stk button{background:var(--bg);color:var(--t);border-radius:12px;padding:8px 2px;font-size:12px}
+#stk button span{display:block;font-size:26px}
+.bar button{padding:9px 11px}.tag{background:#3a1b1d;color:var(--y);font-size:12px;padding:6px 14px}
+</style></head><body><div id="app"></div>
+<script>
+const $=s=>document.querySelector(s);let ws,me,S={users:{},groups:{},online:[]},cur=null,H={},low=localStorage.low==='1';
+const ST=[['😄','WUI!'],['😠','TA A BAZAR?'],['👍','VAMOS KUIAR'],['🤝','MANO'],['🎧','MÔ DEEJAY'],['😎','TA FIXE'],['👋','BAZEI'],['😮','XÊ!'],['🥳','KANDENGUE'],['🕶️','WI RINJO'],['😌','NÃO TEM MACA'],['💃','ESTÁ A BATER'],['🏃','TÔ A VIR'],['👀','TALA'],['🙌','BUÉ DE FIXE'],['🤙','MBORA'],['✌️','SEM STRESS'],['🔥','TÁ FOGO!'],['👌','BOA!'],['😁','TÁ SUAVE']];
+const esc=s=>s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const ini=n=>esc((n||'?').trim()[0].toUpperCase());
+const dmId=(a,b)=>'d:'+[a,b].sort().join('_');
+const name=p=>(S.users[p]||{}).name||p;
+function conn(){
+  ws=new WebSocket((location.protocol==='https:'?'wss://':'ws://')+location.host);
+  ws.onopen=()=>{if(localStorage.token)send({t:'login',token:localStorage.token})};
+  ws.onmessage=e=>{const m=JSON.parse(e.data);
+    if(m.t==='ready'){me=m.me;Object.assign(S,m);cur?chat():home()}
+    if(m.t==='users'){Object.assign(S,m);if(!cur)home()}
+    if(m.t==='err'){localStorage.removeItem('token');login()}
+    if(m.t==='hist'){H[m.chat]=m.msgs;if(cur&&cur.id===m.chat)draw()}
+    if(m.t==='msg'){(H[m.msg.chat]=H[m.msg.chat]||[]).push(m.msg);if(cur&&cur.id===m.msg.chat)draw();if(m.msg.from!==me)navigator.vibrate&&navigator.vibrate(60)}};
+  ws.onclose=()=>setTimeout(conn,2000);
+}
+const send=o=>ws.readyState===1&&ws.send(JSON.stringify(o));
+const post=async(u,b)=>{const r=await fetch(u,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)});return{ok:r.ok,j:await r.json()}};
+function login(){cur=null;$('#app').innerHTML=`<header><h1>WUICHAT</h1></header><div class="pad" id="lg"><p>Fala como nós. Entra para testar.</p><input id="n" placeholder="O teu nome" value="${esc(localStorage.name||'')}"><input id="p" type="tel" placeholder="Telemóvel (9 dígitos)" value="${esc(localStorage.phone||'')}"><button id="go">Receber código SMS</button></div>`;
+  $('#go').onclick=async()=>{const name=$('#n').value,phone=$('#p').value;localStorage.name=name;localStorage.phone=phone;
+    const r=await post('/api/code',{name,phone});if(!r.ok)return alert(r.j.msg);
+    $('#lg').innerHTML=`<p>Escreve o código de 6 dígitos enviado por SMS.</p>${r.j.dev?`<p class="tag">Modo teste: o teu código é <b>${esc(r.j.dev)}</b></p>`:''}<input id="c" inputmode="numeric" maxlength="6" placeholder="Código"><button id="vf">Confirmar</button>`;
+    $('#vf').onclick=async()=>{const v=await post('/api/verify',{name,phone,code:$('#c').value});if(!v.ok)return alert(v.j.msg);localStorage.token=v.j.token;send({t:'login',token:v.j.token})}}}
+async function up(blob,ext){const r=await fetch('/api/upload?ext='+ext+'&token='+localStorage.token,{method:'POST',body:blob});if(!r.ok){alert('Falha no envio');return}return (await r.json()).url}
+function wire(out){
+  $('#im').onclick=()=>$('#fi').click();
+  $('#fi').onchange=async e=>{const f=e.target.files[0];if(!f)return;const bm=await createImageBitmap(f),k=Math.min(1,1024/Math.max(bm.width,bm.height)),c=document.createElement('canvas');c.width=bm.width*k;c.height=bm.height*k;c.getContext('2d').drawImage(bm,0,0,c.width,c.height);
+    c.toBlob(async b=>{const u=await up(b,'jpg');u&&out('image',u)},'image/jpeg',.7);e.target.value=''};
+  let rec,ch=[];
+  $('#mc').onclick=async()=>{
+    if(rec&&rec.state==='recording'){rec.stop();return}
+    try{const st=await navigator.mediaDevices.getUserMedia({audio:true});rec=new MediaRecorder(st);ch=[];
+      rec.ondataavailable=e=>ch.push(e.data);
+      rec.onstop=async()=>{st.getTracks().forEach(t=>t.stop());$('#mc').textContent='🎤';const b=new Blob(ch,{type:rec.mimeType});const u=await up(b,rec.mimeType.includes('mp4')?'m4a':'webm');u&&out('audio',u)};
+      rec.start();$('#mc').textContent='⏹️'}catch{alert('Permite o acesso ao microfone.')}}}
+function home(){cur=null;
+  const gs=Object.entries(S.groups).filter(([,g])=>g.members.includes(me)),us=Object.values(S.users).filter(u=>u.phone!==me);
+  $('#app').innerHTML=`<header><h1>WUICHAT</h1><button class="g" id="lb">${low?'Sem saldo: ON':'Sem saldo: OFF'}</button><button class="g" id="ng">+ Grupo</button></header>${low?'<div class="tag">Modo sem saldo: só texto. Imagens, áudio e stickers ficam bloqueados.</div>':''}<div class="list"><div class="sec">Grupos</div>${gs.map(([id,g])=>`<div class="row" data-id="g:${id}" data-n="${esc(g.name)}"><div class="av">${ini(g.name)}</div><div><b>${esc(g.name)}</b><div class="sub">${g.members.length} pessoas</div></div></div>`).join('')}<div class="sec">Pessoas</div>${us.map(u=>`<div class="row" data-id="${dmId(me,u.phone)}" data-n="${esc(u.name)}"><div class="av ${S.online.includes(u.phone)?'on':''}">${ini(u.name)}</div><div><b>${esc(u.name)}</b><div class="sub">${S.online.includes(u.phone)?'online':'offline'}</div></div></div>`).join('')||'<p class="sub pad">Ainda ninguém. Convida amigos para testar.</p>'}</div>`;
+  document.querySelectorAll('.row').forEach(r=>r.onclick=()=>{cur={id:r.dataset.id,n:r.dataset.n};send({t:'hist',chat:cur.id});chat()});
+  $('#lb').onclick=()=>{low=!low;localStorage.low=low?'1':'0';home()};
+  $('#ng').onclick=()=>{const n=prompt('Nome do grupo:');if(!n)return;const ph=prompt('Telemóveis dos membros, separados por vírgula:','');send({t:'group',name:n,members:(ph||'').split(',').map(x=>x.replace(/\D/g,'')).filter(Boolean)})}}
+function chat(){
+  $('#app').innerHTML=`<header><button class="g" id="bk">←</button><h1>${esc(cur.n)}</h1></header><div id="msgs"></div><div id="stk">${ST.map((s,i)=>`<button data-i="${i}"><span>${s[0]}</span>${s[1]}</button>`).join('')}</div><div class="bar"><input id="t" placeholder="Mensagem..." autocomplete="off">${low?'':'<button id="sb">😄</button><button id="im">📷</button><button id="mc">🎤</button><input id="fi" type="file" accept="image/*" hidden>'}<button id="sd">Enviar</button></div>`;
+  $('#bk').onclick=home;draw();
+  const out=(kind,body)=>send({t:'msg',to:cur.id.startsWith('g:')?cur.id:cur.id.slice(2).split('_').find(x=>x!==me)||me,kind,body});
+  const go=()=>{const v=$('#t').value.trim();if(v){out('text',v);$('#t').value=''}};
+  $('#sd').onclick=go;$('#t').onkeydown=e=>e.key==='Enter'&&go();
+  if(!low){wire(out);$('#sb').onclick=()=>{const s=$('#stk');s.style.display=s.style.display==='grid'?'none':'grid'};
+    document.querySelectorAll('#stk button').forEach(b=>b.onclick=()=>{out('sticker',ST[b.dataset.i].join('|'));$('#stk').style.display='none'})}}
+function draw(){const box=$('#msgs');if(!box)return;const grp=cur.id.startsWith('g:');
+  box.innerHTML=(H[cur.id]||[]).map(m=>{const mine=m.from===me,t=new Date(m.ts).toLocaleTimeString('pt',{hour:'2-digit',minute:'2-digit'}),who=grp&&!mine?`<small>${esc(name(m.from))}</small>`:'';
+    if(m.kind==='image'||m.kind==='audio'){const c=low?'['+(m.kind==='image'?'imagem':'áudio')+' · modo sem saldo]':m.kind==='image'?`<img src="${esc(m.body)}" loading="lazy" style="max-width:100%;border-radius:10px;display:block">`:`<audio controls preload="none" src="${esc(m.body)}"></audio>`;return `<div class="b ${mine?'me':''}">${who}${c}<small>${t}</small></div>`}
+    if(m.kind==='sticker'){const[e,w]=m.body.split('|');return low?`<div class="b ${mine?'me':''}">${who}[sticker] ${esc(w)}<small>${t}</small></div>`:`<div class="b st ${mine?'me':''}" style="align-self:${mine?'flex-end':'flex-start'}">${who}${e}<b>${esc(w)}</b><small>${t}</small></div>`}
+    return `<div class="b ${mine?'me':''}">${who}${esc(m.body)}<small>${t}</small></div>`}).join('');box.scrollTop=box.scrollHeight}
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js');
+login();conn();
+</script></body></html>
